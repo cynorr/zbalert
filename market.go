@@ -14,9 +14,12 @@ import (
 
 var MarketUrl string = "http://api.zb.com/data/v1/markets"
 var KLineUrl string = "http://api.zb.com/data/v1/kline"
+var Coins [60]Coin
+var market Market
+
 const size int = 15
 const step float64 = 0.01
-const threshold float64 = 0.00005
+const threshold float64 = 0.01
 
 type Coin struct {
 	name string
@@ -28,10 +31,6 @@ type Market struct {
 	MoneyType string `json: "moneyType"`
 	Symbol string	`json: "symbol"`
 	Data [][]float64 `json: "data"`
-}
-
-func (coin *Coin) Init(name string) {
-	coin.name = name
 }
 
 func (coin *Coin) Pull() {
@@ -48,12 +47,16 @@ func (coin *Coin) Pull() {
 	if err != nil {
 		fmt.Printf("Coin Err")
 	}
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Parser error")
+	}
 	defer resp.Body.Close()
 
-	var market Market
 	json.Unmarshal(body, &market)
-	coin.trigger(market.Data)
+	if len(market.Data) == size && len(market.Data[0]) == 6 {
+		coin.trigger(market.Data)
+	}
 }
 
 func (coin *Coin) trigger(data [][]float64) {
@@ -102,11 +105,10 @@ func (coin *Coin) trigger(data [][]float64) {
 			Period = (LatestTimestamp - int64(data[IndexOfMaxPrice][0])) / 60000
 		}
 
-		fmt.Println(UpAmplitude, DownAmplitude, Amplitude)
-
 		if Amplitude != 0 && ( Amplitude * coin.amplitude <= 0 || math.Abs(Amplitude) - math.Abs(coin.amplitude)> step ){
 			coin.amplitude = Amplitude
-			fmt.Println(strings.ToUpper(coin.name[0:len(coin.name)-5]), Period, Amplitude, ReferencePrice, LatestPrice)
+			HumanAmplitude := int((Amplitude * 100) - 100)
+			fmt.Println(strings.ToUpper(coin.name[0:len(coin.name)-5]), Period, HumanAmplitude, ReferencePrice, LatestPrice)
 		}
 	}
 }
@@ -116,25 +118,37 @@ func InitCoins() {
 	if err != nil {
 		fmt.Printf("Error")
 	}
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Parser Error")
+	}
 	defer resp.Body.Close()
 	var m map[string] interface{}
 	json.Unmarshal(body, &m)
+
+	index := 0
 	for k, _ := range m {
 		if strings.HasSuffix(k, "_usdt") {
-			fmt.Println(k)
+			Coins[index] = Coin{name: k}
+			index ++
 		}
 	}
 }
 
 
 func main() {
-	//InitCoins()
-	var coins_name []string
-	InitCoins(coins_name)
+	 InitCoins()
+	for _, coin := range Coins {
+		time.Sleep(1 * time.Second)
+		if coin.name == "" {
+			break
+		}
+		coin.Pull()
+	}
 
-	coin := Coin{}
-	coin.Init("lbtc_usdt")
-	fmt.Println(time.Now().Unix())
+	fmt.Println("Starting ... ")
+	time.Sleep(1)
+	coin := Coin{name: "lbtc_usdt"}
 	coin.Pull()
+	fmt.Println("End ... ")
 }
