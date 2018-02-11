@@ -30,7 +30,7 @@ func main() {
 			}
 			alert := Coins[index].Pull()
 			if alert != nil {
-				mails[i%mailSize].PushAlert(alert, to)
+				go mails[i%mailSize].PushAlert(alert, to)
 				i++
 			}
 		}
