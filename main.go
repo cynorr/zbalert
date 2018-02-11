@@ -14,18 +14,15 @@ func main() {
 	to := []string{"cynorr@163.com"}
 
 	for {
-		for _, coin := range Coins {
+		for index, _ := range Coins {
 			time.Sleep(1 * time.Second)
-			if coin.Name == "" {
+			if Coins[index].Name == "" {
 				break
 			}
-			alert := coin.Pull()
+			alert := Coins[index].Pull()
 			if alert != nil {
-				qmail.PushAlert(alert, to)
+				go qmail.PushAlert(alert, to)
 			}
 		}
 	}
-
-
-
 }

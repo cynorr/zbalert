@@ -27,6 +27,16 @@ type Alert struct {
 	TargetPrice float64
 }
 
+func (alert *Alert) Clone() Alert{
+	return Alert{
+		alert.CoinName,
+		alert.Amplitude,
+		alert.Duration,
+		alert.ReferencePrice,
+		alert.TargetPrice,
+	}
+}
+
 type Coin struct {
 	Name string
 	Timestamp int64
@@ -121,7 +131,7 @@ func (coin *Coin) trigger(data [][]float64) *Alert{
 				ReferencePrice,
 				LatestPrice,
 				}
-			fmt.Println(strings.ToUpper(coin.Name[0:len(coin.Name)-5]), Period, HumanAmplitude, ReferencePrice, LatestPrice)
+			fmt.Println(alert)
 		}
 	}
 	return alert
