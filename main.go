@@ -13,10 +13,10 @@ func main() {
 
 	const mailSize = 4
 	var mails [mailSize]notify.SMTP
-	mails[0] = notify.SMTP{"cynorr@2980.com", "AAAaaa123", "smtp.2980.com"}
+	mails[0] = notify.SMTP{"cynorr3@tom.com", "AAAaaa123", "smtp.tom.com"}
 	mails[1] = notify.SMTP{"cynorr1@tom.com", "AAAaaa123", "smtp.tom.com"}
 	mails[2] = notify.SMTP{"cynorr2@tom.com", "AAAaaa123", "smtp.tom.com"}
-	mails[3] = notify.SMTP{"cynorr@2980.com", "AAAaaa1234", "smtp.2980.com"}
+	mails[3] = notify.SMTP{"cynorr1@2980.com", "AAAaaa123", "smtp.2980.com"}
 
 	to := []string{"cynorr@163.com"}
 

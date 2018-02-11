@@ -36,6 +36,6 @@ func (mail *SMTP) PushAlert(message *market.Alert, to []string) {
 		"<" + mail.User + ">\r\nSubject: " + subject + "\r\n" + content_type + "\r\n\r\n" + body)
 	err := smtp.SendMail(host, auth, mail.User, to, msg)
 	if err != nil {
-		fmt.Printf("send mail error: %v", err)
+		fmt.Printf("%s send mail error: %v\n", mail.User, err)
 	}
 }
