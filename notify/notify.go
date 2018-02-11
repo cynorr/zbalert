@@ -7,17 +7,28 @@ import (
 	"zbalert/market"
 )
 
-type QQMailSMTP struct {
-	User string
-	Password string
+type unencryptedAuth struct {
+	smtp.Auth
 }
 
-func (mail *QQMailSMTP) PushAlert(message *market.Alert, to []string) {
-	basehost := "smtp.qq.com"
-	auth := smtp.PlainAuth("", mail.User, mail.Password, basehost)
+func (a unencryptedAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	s := *server
+	s.TLS = true
+	return a.Auth.Start(&s)
+}
 
-	host := "smtp.qq.com:25"
-	nickname := fmt.Sprintf("%s\t%+d%%", message.CoinName, message.Amplitude)
+type SMTP struct {
+	User string
+	Password string
+	Host string
+}
+
+func (mail *SMTP) PushAlert(message *market.Alert, to []string) {
+	basehost := mail.Host
+	auth := unencryptedAuth{smtp.PlainAuth("", mail.User, mail.Password, basehost)}
+
+	host := fmt.Sprintf("%s:25", mail.Host)
+	nickname := fmt.Sprintf("%s  %+d%%", message.CoinName, message.Amplitude)
 	subject := fmt.Sprintf("%g  ->  %g", message.ReferencePrice, message.TargetPrice)
 	content_type := "Content-Type: text/plain; charset=UTF-8"
 	body := "Alert"
